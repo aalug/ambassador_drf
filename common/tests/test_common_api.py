@@ -18,7 +18,7 @@ def create_user(**params):
     return get_user_model().objects.create_user(**params)
 
 
-def create_payload(**params):
+def create_payload(create_confirm_pass, **params):
     """Create and return a new payload."""
     password = 'password123'
     payload = {
@@ -29,6 +29,10 @@ def create_payload(**params):
         'last_name': 'User'
     }
     payload.update(params)
+    if not create_confirm_pass:
+        # Delete confirm_password, it is not needed in this case.
+        del payload['confirm_password']
+        
     return payload
 
 
@@ -41,7 +45,7 @@ class PublicUserApiTests(TestCase):
 
     def test_create_user_success(self):
         """Test creating a user is successful."""
-        payload = create_payload(email='dycjh@example.com',)
+        payload = create_payload(create_confirm_pass=True)
         res = self.client.post(REGISTER_URL, payload, format='json')
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -53,10 +57,9 @@ class PublicUserApiTests(TestCase):
 
     def test_user_with_email_exists_error(self):
         """Test error returned if user with email exists."""
-        payload = create_payload(email='test1@example.com')
-        del payload['confirm_password']
+        payload = create_payload(create_confirm_pass=False)
         create_user(**payload)
-        payload['confirm_password'] = 'password123'
+        payload['confirm_password'] = payload['password']
 
         res = self.client.post(REGISTER_URL, payload, format='json')
 
@@ -64,7 +67,7 @@ class PublicUserApiTests(TestCase):
 
     def test_password_too_short_error(self):
         """Test an error is returned if password less than 5 chars."""
-        payload = create_payload(password='12345', confirm_password='12345')
+        payload = create_payload(create_confirm_pass=True, password='12345', confirm_password='12345')
         res = self.client.post(REGISTER_URL, payload, format='json')
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
@@ -75,7 +78,7 @@ class PublicUserApiTests(TestCase):
 
     def test_passwords_do_not_match_error(self):
         """Test an error is returned if passwords do not match."""
-        payload = create_payload(password='password', confirm_password='wrongPass')
+        payload = create_payload(create_confirm_pass=True, confirm_password='wrongPass')
 
         res = self.client.post(REGISTER_URL, payload, format='json')
 
@@ -87,7 +90,7 @@ class PublicUserApiTests(TestCase):
 
     def test_admin_is_not_ambassador(self):
         """Test that new admin user is not an ambassador."""
-        payload = create_payload()
+        payload = create_payload(create_confirm_pass=True)
         res = self.client.post(REGISTER_URL, payload, format='json')
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -96,9 +99,7 @@ class PublicUserApiTests(TestCase):
 
     def test_login(self):
         """Test that login is successful."""
-        payload = create_payload()
-        # Delete confirm_password, it is not needed in creating a user this way
-        del payload['confirm_password']
+        payload = create_payload(create_confirm_pass=False)
         create_user(**payload)
         credentials = {
             'email': payload['email'],
@@ -112,9 +113,7 @@ class PublicUserApiTests(TestCase):
 
     def test_login_wrong_password_error(self):
         """Test login with wrong password raises error.."""
-        payload = create_payload()
-        # Delete confirm_password, it is not needed in creating a user this way
-        del payload['confirm_password']
+        payload = create_payload(create_confirm_pass=False)
         create_user(**payload)
         credentials = {
             'email': payload['email'],
@@ -122,12 +121,11 @@ class PublicUserApiTests(TestCase):
         }
         res = self.client.post(LOGIN_URL, credentials, format='json')
 
-        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_login_wrong_email_error(self):
         """Test login with wrong email raises error."""
-        payload = create_payload()
-        del payload['confirm_password']
+        payload = create_payload(create_confirm_pass=False)
         create_user(**payload)
         credentials = {
             'email': 'wrongEmail',
@@ -135,12 +133,11 @@ class PublicUserApiTests(TestCase):
         }
         res = self.client.post(LOGIN_URL, credentials, format='json')
 
-        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_password_or_email_not_provided_error(self):
         """Test an error is returned if password or email is not provided."""
-        data = create_payload()
-        del data['confirm_password']
+        data = create_payload(create_confirm_pass=False)
         create_user(**data)
 
         payload_1 = {'email': data['email'], 'password': ''}
@@ -149,5 +146,18 @@ class PublicUserApiTests(TestCase):
         res_1 = self.client.post(LOGIN_URL, payload_1, format='json')
         res_2 = self.client.post(LOGIN_URL, payload_2, format='json')
 
-        self.assertEqual(res_1.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(res_2.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(res_1.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(res_2.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_jwt_auth(self):
+        """Test JWT authentication."""
+        payload = create_payload(create_confirm_pass=False)
+        create_user(**payload)
+        credentials = {
+            'email': payload['email'],
+            'password': payload['password']
+        }
+        res = self.client.post(LOGIN_URL, credentials, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn('jwt', res.cookies)

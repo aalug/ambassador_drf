@@ -1,8 +1,10 @@
 from django.contrib.auth import get_user_model
 from rest_framework import exceptions, status, generics
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from common.authentication import JWTAuthentication
 from common.serializers import UserSerializer
 
 
@@ -44,4 +46,24 @@ class LoginAPIView(APIView):
         if not user.check_password(password):
             raise exceptions.AuthenticationFailed('Password is incorrect.')
 
-        return Response(self.serializer_class(user).data, status=status.HTTP_200_OK)
+        token = JWTAuthentication.generate_jwt(user.id)
+
+        response = Response()
+        response.set_cookie(key='jwt', value=token, httponly=True)
+        response.data = {'message': 'Login successful.'}
+        response.status_code = status.HTTP_200_OK
+
+        return response
+
+
+class UserAPIView:
+    """API view for retrieving users.."""
+    serializer_class = UserSerializer
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        """Retrieve all users."""
+        users = get_user_model().objects.all()
+        serializer = self.serializer_class(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
