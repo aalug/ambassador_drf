@@ -19,6 +19,7 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.is_staff = False
         user.is_superuser = False
+        user.is_ambassador = False
         user.save(using=self._db)
         return user
 
@@ -31,6 +32,7 @@ class UserManager(BaseUserManager):
         user = self.create_user(email, password)
         user.is_staff = True
         user.is_superuser = True
+        user.is_ambassador = False
         user.save(using=self._db)
         return user
 
@@ -48,3 +50,59 @@ class User(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+
+
+class Product(models.Model):
+    """Product model."""
+    title = models.CharField(max_length=255)
+    description = models.TextField(max_length=1000, null=True, blank=True)
+    image = models.CharField(max_length=255, null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return self.title
+
+
+class Link(models.Model):
+    """Link model."""
+    code = models.CharField(max_length=255, unique=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    products = models.ManyToManyField(Product)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class Order(models.Model):
+    """Order model."""
+    transaction_id = models.CharField(max_length=255, null=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    code = models.CharField(max_length=255)
+    ambassador_email = models.EmailField(max_length=255)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255)
+    address = models.CharField(max_length=255, null=True)
+    city = models.CharField(max_length=255, null=True)
+    country = models.CharField(max_length=255, null=True)
+    zip_code = models.CharField(max_length=10, null=True)
+    complete = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.transaction_id
+
+
+class OrderItem(models.Model):
+    """OrderItem model."""
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
+    product_title = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.IntegerField()
+    admin_revenue = models.DecimalField(max_digits=10, decimal_places=2)
+    ambassador_revenue = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'Order Item {self.id}'

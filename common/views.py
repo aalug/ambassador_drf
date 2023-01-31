@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from rest_framework import exceptions, status, generics
+from rest_framework import exceptions, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -56,14 +56,66 @@ class LoginAPIView(APIView):
         return response
 
 
-class UserAPIView:
+class UserAPIView(APIView):
     """API view for retrieving users.."""
     serializer_class = UserSerializer
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        """Retrieve all users."""
-        users = get_user_model().objects.all()
-        serializer = self.serializer_class(users, many=True)
+        """Retrieve a user."""
+        serializer = self.serializer_class(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class LogoutAPIView(APIView):
+    """API view for logging out users."""
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        """Logout a user."""
+        response = Response()
+        response.delete_cookie(key='jwt')
+        response.data = {'message': 'Logout successful.'}
+        response.status_code = status.HTTP_200_OK
+        return response
+
+
+class UpdateProfileInfoAPIView(APIView):
+    """API view for managing profile information."""
+    serializer_class = UserSerializer
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def put(self, request, pk=None):
+        """Retrieve profile information."""
+        data = request.data
+        if 'password' in data or 'confirm_password' in data:
+            raise exceptions.ValidationError('Password update not allowed via this endpoint.')
+
+        user = request.user
+        serializer = self.serializer_class(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UpdatePasswordAPIView(APIView):
+    """API view for updating passwords."""
+    serializer_class = UserSerializer
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def put(self, request, pk=None):
+        """Retrieve profile information."""
+        user = request.user
+        data = request.data
+
+        if data['password'] != data['confirm_password']:
+            raise exceptions.ValidationError('Passwords do not match.')
+
+        user.set_password(data['password'])
+        user.save()
+        return Response(self.serializer_class(user).data, status=status.HTTP_200_OK)
