@@ -51,6 +51,15 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
+    @property
+    def name(self):
+        return f'{self.first_name} {self.last_name}'
+
+    @property
+    def revenue(self):
+        orders = Order.objects.filter(user__id=self.pk, complete=True)
+        return sum(o.ambassador_revenue for o in orders)
+
 
 class Product(models.Model):
     """Product model."""
@@ -91,6 +100,17 @@ class Order(models.Model):
 
     def __str__(self):
         return self.transaction_id
+
+    @property
+    def name(self):
+        """Returns full name."""
+        return f'{self.first_name} {self.last_name}'
+
+    @property
+    def ambassador_revenue(self):
+        """Returns total ambassador's revenue."""
+        items = OrderItem.objects.filter(order__id=self.pk)
+        return sum(i.ambassador_revenue for i in items)
 
 
 class OrderItem(models.Model):

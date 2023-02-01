@@ -109,7 +109,7 @@ class ModelTest(TestCase):
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
 
-    def test_user_xtra_fields(self):
+    def test_user_extra_fields(self):
         """Test creating user with extra fields."""
         user_details = {
             'email': 'user@example.com',
@@ -122,6 +122,36 @@ class ModelTest(TestCase):
 
         self.assertEqual(user.first_name, user_details['first_name'])
         self.assertEqual(user.last_name, user_details['last_name'])
+
+    def test_user_name_property(self):
+        """Test user's name property."""
+        user = create_user(
+            email='u@example.com',
+            password='password123',
+            first_name='First',
+            last_name='Last',
+        )
+        self.assertEqual(user.name, f'{user.first_name} {user.last_name}')
+
+    def test_order_name_property(self):
+        """Test order's name property."""
+        user = create_user(email='userr@example.com', password='pass123')
+        order = create_order_and_order_item(user)[0]
+
+        self.assertEqual(order.name, f'{order.first_name} {order.last_name}')
+
+    def test_ambassador_revenue(self):
+        """Test ambassador revenue method property."""
+        user = create_user(email='userr@example.com', password='pass123')
+        order, order_item = create_order_and_order_item(user)
+        self.assertEqual(order.ambassador_revenue, order_item.ambassador_revenue)
+
+        order_item_2 = OrderItem.objects.create(order=order, product_title='Test 2',
+                                                price=30.00, quantity=2, admin_revenue=1.50,
+                                                ambassador_revenue=5.50)
+        self.assertEqual(
+            order.ambassador_revenue,
+            order_item.ambassador_revenue + order_item_2.ambassador_revenue)
 
     def test_product_creation(self):
         """Test creating a product."""

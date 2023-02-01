@@ -16,10 +16,12 @@ services:
       - DB_PORT=3306
     depends_on:
       - db
+      - redis
 
   db:
     image: mysql:8.0.32
     restart: always
+    container_name: ambassador-db
     environment:
       - MYSQL_DATABASE=ambassador
       - MYSQL_USER=root
@@ -29,3 +31,9 @@ services:
       - .dbdata:/var/lib/mysql
     ports:
       - "3306:3306"
+
+  redis:
+    image: redis:7.0
+    container_name: ambassador-redis
+    ports:
+      - "6379:6379"

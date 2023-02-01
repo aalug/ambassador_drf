@@ -27,4 +27,5 @@ urlpatterns = [
         name='api-docs'
     ),
     path('api/admin/', include('administrator.urls')),
+    path('api/ambassador/', include('ambassador.urls')),
 ]
