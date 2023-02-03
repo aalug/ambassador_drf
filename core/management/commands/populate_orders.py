@@ -1,5 +1,5 @@
 """
-Django command to populate the database with ambassadors.
+Django command to populate the database with orders.
 """
 from random import randrange
 
