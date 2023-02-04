@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'common',
     'administrator',
     'ambassador',
+    'checkout',
 ]
 
 MIDDLEWARE = [
@@ -158,3 +159,15 @@ REST_FRAMEWORK = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
+
+# emails configuration
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT'))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
+
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL')
+
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')

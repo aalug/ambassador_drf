@@ -252,7 +252,7 @@ class RequireUserModelTests(TestCase):
             zip_code='10001',
         )
 
-        self.assertEqual(str(order), 'T12345')
+        self.assertEqual(str(order), f'Order: {order.transaction_id}')
 
     def test_order_item_created(self):
         """Test if the order item was created successfully."""

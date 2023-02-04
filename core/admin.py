@@ -1,5 +1,5 @@
 from django.contrib import admin
-from core.models import User
+from core.models import User, Product, Order, OrderItem, Link
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -8,3 +8,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 admin.site.register(User, UserAdmin)
+admin.site.register(Product)
+admin.site.register(Link)
+admin.site.register(Order)
+admin.site.register(OrderItem)

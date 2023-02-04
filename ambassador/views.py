@@ -1,5 +1,5 @@
 """
-Views for ambassador app.
+Views for the ambassador app.
 """
 import math
 import random

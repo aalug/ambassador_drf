@@ -99,7 +99,7 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.transaction_id
+        return f'Order: {self.transaction_id}'
 
     @property
     def name(self):
@@ -111,6 +111,11 @@ class Order(models.Model):
         """Returns total ambassador's revenue."""
         items = OrderItem.objects.filter(order__id=self.pk)
         return sum(i.ambassador_revenue for i in items)
+
+    @property
+    def admin_revenue(self):
+        items = OrderItem.objects.filter(order__id=self.pk)
+        return sum(i.aadmin_revenue for i in items)
 
 
 class OrderItem(models.Model):
