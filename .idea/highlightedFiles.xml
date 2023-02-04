@@ -4,6 +4,7 @@
     <files>
       <node color="3" path="$PROJECT_DIR$/administrator" />
       <node color="4" path="$PROJECT_DIR$/ambassador" />
+      <node color="5" path="$PROJECT_DIR$/checkout" />
       <node color="1" path="$PROJECT_DIR$/common" />
       <node color="2" path="$PROJECT_DIR$/core" />
     </files>
@@ -12,7 +13,7 @@
       <color id="2" value="#000000" name="Color 2" enabled="true" />
       <color id="3" value="#0b1223" name="Color 3" enabled="true" />
       <color id="4" value="#0d1a0d" name="Color 4" enabled="true" />
-      <color id="5" value="#0f2f47" name="Color 5" enabled="true" />
+      <color id="5" value="#340825" name="Color 5" enabled="true" />
       <color id="6" value="#171a34" name="Color 6" enabled="true" />
       <color id="7" value="#311333" name="Color 7" enabled="true" />
       <color id="8" value="#1e1e1e" name="Color 8" enabled="true" />

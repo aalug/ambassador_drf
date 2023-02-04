@@ -1,3 +1,6 @@
+"""
+Views for the administrator app.
+"""
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from rest_framework.permissions import IsAuthenticated
