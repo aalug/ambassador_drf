@@ -14,14 +14,6 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class LinkSerializer(serializers.ModelSerializer):
-    """Serializer for the Link model."""
-
-    class Meta:
-        model = Link
-        fields = '__all__'
-
-
 class OrderItemSerializer(serializers.ModelSerializer):
     """Serializer for the OrderItem model."""
 
@@ -43,3 +35,16 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = '__all__'
+
+
+class LinkSerializer(serializers.ModelSerializer):
+    """Serializer for the Link model."""
+    orders = serializers.SerializerMethodField('get_orders')
+
+    def get_orders(self, obj):
+        return OrderSerializer(Order.objects.filter(code=obj.code), many=True).data
+
+    class Meta:
+        model = Link
+        fields = '__all__'
+
