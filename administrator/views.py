@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics, mixins
 
-from administrator.serializers import ProductSerializer, LinkSerializer
+from administrator.serializers import ProductSerializer, LinkSerializer, OrderSerializer
 from common.authentication import JWTAuthentication
 from common.serializers import UserSerializer
 from core.models import Product, Link, Order
@@ -84,7 +84,7 @@ class OrderAPIView(APIView):
     """View for retrieving products."""
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
-    serializer_class = LinkSerializer
+    serializer_class = OrderSerializer
 
     def get(self, request):
         orders = Order.objects.filter(complete=True)
