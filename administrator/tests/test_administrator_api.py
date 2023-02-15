@@ -9,10 +9,11 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from core.models import Product, Link
+from core.models import Product, Link, Order
 
 AMBASSADORS_URL = reverse('ambassadors')
 PRODUCTS_URL = reverse('products')
+ORDERS_URL = reverse('orders')
 
 
 def get_product_url(pk: int):
@@ -186,5 +187,32 @@ class ApiTests(TestCase):
         self.assertEqual(Link.objects.all().count(), 1)
         self.assertEqual(res.data[0]['id'], link.id)
 
+    def test_retrieve_orders(self):
+        """Test retrieving orders is successful."""
+        order = Order.objects.create(
+            transaction_id='asdqwe',
+            user=self.user,
+            code='abc123',
+            ambassador_email='ambs@example.com',
+            first_name='First',
+            last_name='Last',
+            email='email@example.com',
+            address='some address 12',
+            city='New York',
+            country='USA',
+            zip_code='10001',
+            complete=True
+        )
+        res = self.client.get(ORDERS_URL)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(Order.objects.all().count(), 1)
+        self.assertEqual(res.data[0]['id'], order.id)
+        self.assertEqual(res.data[0]['user'], self.user.id)
+        self.assertEqual(res.data[0]['transaction_id'], order.transaction_id)
+        self.assertEqual(res.data[0]['code'], order.code)
+        self.assertEqual(res.data[0]['email'], order.email)
+        self.assertEqual(res.data[0]['address'], order.address)
+        self.assertEqual(res.data[0]['ambassador_email'], order.ambassador_email)
 
 
