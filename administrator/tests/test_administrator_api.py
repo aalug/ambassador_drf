@@ -214,5 +214,3 @@ class ApiTests(TestCase):
         self.assertEqual(res.data[0]['email'], order.email)
         self.assertEqual(res.data[0]['address'], order.address)
         self.assertEqual(res.data[0]['ambassador_email'], order.ambassador_email)
-
-
