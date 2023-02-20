@@ -33,7 +33,7 @@ def create_user(**params):
         'last_name': 'User',
         'email': 'amb@example.com',
         'password': 'password123',
-        'is_ambassador': True
+        'is_ambassador': False
     }
     details.update(params)
     return get_user_model().objects.create(**details)
@@ -74,7 +74,7 @@ class ApiTests(TestCase):
 
     def test_ambassadors_endpoint_returns_only_ambassadors(self):
         """Test that the Ambassador API returns ambassadors."""
-        ambassador = create_user()
+        ambassador = create_user(is_ambassador=True)
         create_user(is_ambassador=False, email='non-amb@example.com')
 
         res = self.client.get(AMBASSADORS_URL)
@@ -214,3 +214,35 @@ class ApiTests(TestCase):
         self.assertEqual(res.data[0]['email'], order.email)
         self.assertEqual(res.data[0]['address'], order.address)
         self.assertEqual(res.data[0]['ambassador_email'], order.ambassador_email)
+
+    def test_create_user_is_ambassador_false(self):
+        """Test that creating a user via administrator app will set
+           user.is_ambassador to False."""
+        payload = {
+            'first_name': 'Test',
+            'last_name': 'User',
+            'email': 'administrator@example.com',
+            'password': 'password123',
+            'confirm_password': 'password123'
+        }
+        res = self.client.post('/api/admin/register/', payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertFalse(res.data['is_ambassador'])
+
+    def test_only_admin_can_login_via_admin(self):
+        """Test that only user that is not an admin cannot log in via this endpoint."""
+        not_admin = create_user(
+            first_name='Not',
+            last_name='Admin',
+            email='not_admin@example.com',
+            password='password',
+            is_ambassador=True
+        )
+        not_amin_credentials = {
+            'email': not_admin.email,
+            'password': not_admin.password
+        }
+        res = self.client.post('/api/admin/login/', not_amin_credentials, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
