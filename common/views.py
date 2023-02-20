@@ -19,7 +19,7 @@ class RegisterAPIView(APIView):
         if data['password'] != data['confirm_password']:
             raise exceptions.ValidationError('Passwords do not match.')
 
-        data['is_ambassador'] = 'api/ambassador/' in request.path
+        data['is_ambassador'] = 'ambassador' in request.path
 
         serializer = self.serializer_class(data=data)
         if serializer.is_valid():
@@ -51,6 +51,8 @@ class LoginAPIView(APIView):
         token = JWTAuthentication.generate_jwt(user.id, scope)
 
         if user.is_ambassador and scope == 'admin':
+            raise exceptions.AuthenticationFailed('Unauthorized.')
+        elif not user.is_ambassador and scope == 'ambassador':
             raise exceptions.AuthenticationFailed('Unauthorized.')
 
         response = Response()

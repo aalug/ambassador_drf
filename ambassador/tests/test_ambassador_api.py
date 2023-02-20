@@ -182,3 +182,35 @@ class PrivateAmbassadorApiTests(TestCase):
         self.assertEqual(r2.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
         self.assertEqual(r3.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
         self.assertEqual(r4.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_create_user_is_ambassador_true(self):
+        """Test that creating a user via ambassador app will set
+           user.is_ambassador to True."""
+        payload = {
+            'first_name': 'Test',
+            'last_name': 'User',
+            'email': 'ambassadoar@example.com',
+            'password': 'password123',
+            'confirm_password': 'password123'
+        }
+        res = self.client.post('/api/ambassador/register/', payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(res.data['is_ambassador'])
+
+    def test_only_ambassador_can_login_via_ambassador(self):
+        """Test that user that is not an ambassador cannot log in via this endpoint."""
+        not_ambassador = get_user_model().objects.create(
+            first_name='Not',
+            last_name='Ambassador',
+            email='not_ambassador@example.com',
+            password='password',
+            is_ambassador=False
+        )
+        not_ambassador_credentials = {
+            'email': not_ambassador.email,
+            'password': not_ambassador.password
+        }
+        res = self.client.post('/api/ambassador/login/', not_ambassador_credentials, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
