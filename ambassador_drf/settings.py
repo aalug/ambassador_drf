@@ -177,3 +177,5 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL')
 
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
+
+FRONTEND_URL = os.environ.get('FRONTEND_URL')

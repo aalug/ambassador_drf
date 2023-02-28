@@ -55,16 +55,18 @@ class ProductBackendAPIView(APIView):
         total = len(products)
 
         sort = request.query_params.get('sort', None)
-        if sort == 'price-asc':
-            products.sort(key=lambda p: p.price)
-        elif sort == 'price-desc':
-            products.sort(key=lambda p: p.price, reverse=True)
-        elif sort == 'title-asc':
-            products.sort(key=lambda p: p.title)
-        elif sort == 'title-desc':
-            products.sort(key=lambda p: p.price, reverse=True)
 
-        per_page = 9
+        if sort is not None:
+            if sort == 'price-asc':
+                products.sort(key=lambda p: p.price)
+            elif sort == 'price-desc':
+                products.sort(key=lambda p: p.price, reverse=True)
+            elif sort == 'title-asc':
+                products.sort(key=lambda p: p.title.lower())
+            elif sort == 'title-desc':
+                products.sort(key=lambda p: p.title.lower(), reverse=True)
+
+        per_page = 12
         page = int(request.query_params.get('page', 1))
         start = (page - 1) * per_page
         end = page * per_page
