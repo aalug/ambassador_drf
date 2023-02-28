@@ -78,8 +78,8 @@ class OrderAPIView(APIView):
             stripe.api_key = settings.STRIPE_API_KEY
 
             source = stripe.checkout.Session.create(
-                success_url='http://localhost:5000/success?source={CHECKOUT_SESSION_ID}',
-                cancel_url='http://localhost:5000/error',
+                success_url=f'{settings.FRONTEND_URL}/checkout/success?source={CHECKOUT_SESSION_ID}',
+                cancel_url=f'{settings.FRONTEND_URL}/checkout/error',
                 payment_method_types=['card'],
                 line_items=line_items
             )
