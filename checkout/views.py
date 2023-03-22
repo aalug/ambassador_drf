@@ -2,6 +2,8 @@
 Views for the checkout app.
 """
 import decimal
+import random
+import string
 
 import stripe
 from django.conf import settings
@@ -77,17 +79,21 @@ class OrderAPIView(APIView):
 
             stripe.api_key = settings.STRIPE_API_KEY
 
-            source = stripe.checkout.Session.create(
-                success_url=f'{settings.FRONTEND_URL}/checkout/success?source={CHECKOUT_SESSION_ID}',
-                cancel_url=f'{settings.FRONTEND_URL}/checkout/error',
-                payment_method_types=['card'],
-                line_items=line_items
-            )
+            # source = stripe.checkout.Session.create(
+            #     success_url=f'{settings.FRONTEND_URL}/checkout/success?source={CHECKOUT_SESSION_ID}',
+            #     cancel_url=f'{settings.FRONTEND_URL}/checkout/error',
+            #     payment_method_types=['card'],
+            #     line_items=line_items
+            # )
+            # order.transaction_id = source['id']
 
-            order.transaction_id = source['id']
+            random_chars = [random.choice(string.ascii_letters + string.digits) for _ in range(20)]
+            random_string = ''.join(random_chars)
+
+            order.transaction_id = random_string
             order.save()
 
-            return Response(source, status=status.HTTP_200_OK)
+            return Response(random_string, status=status.HTTP_200_OK)
 
         except Exception:
             transaction.rollback()

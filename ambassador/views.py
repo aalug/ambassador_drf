@@ -5,7 +5,6 @@ import math
 import random
 import string
 
-from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
