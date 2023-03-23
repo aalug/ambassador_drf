@@ -1,6 +1,7 @@
 # Django REST framework ambassador app
 
-The app is built with the **Django REST framework** on the backend and **Vue.js** on the frontend. The frontend app: https://github.com/aalug/ambassador_vue  
+The app is built with the **Django REST framework** on the backend and **Vue.js** on the frontend. [The frontend app](https://github.com/aalug/ambassador_vue)
+
 The app uses:
 
 - Docker
